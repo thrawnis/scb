@@ -1,0 +1,10 @@
+{
+  "name": "scb",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/mechanics.mjs && node test/bot.mjs",
+    "test:browser": "node test/smoke.mjs && node test/saveload.mjs",
+    "levels": "node test/print-level.mjs"
+  }
+}

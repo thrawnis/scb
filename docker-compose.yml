@@ -1,0 +1,13 @@
+services:
+  scb:
+    build: .
+    image: scb:latest
+    container_name: scb
+    ports:
+      - "8080:8080"
+    volumes:
+      - scb-data:/data   # save games live here
+    restart: unless-stopped
+
+volumes:
+  scb-data:

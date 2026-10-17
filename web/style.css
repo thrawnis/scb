@@ -1,0 +1,70 @@
+:root {
+  --bg: #0a0818;
+  --panel: #161238;
+  --edge: #ffd23a;
+  --text: #f4f0ff;
+  --dim: #a8a0d0;
+  --accent: #ff5a6e;
+  --scale: 3;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+body { font: 600 16px/1.35 ui-monospace, "SFMono-Regular", Menlo, Consolas, "Courier New", monospace; }
+main { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#stage { position: relative; background: #000; box-shadow: 0 0 0 2px #2a2458, 0 12px 40px #000a; }
+#screen { width: 100%; height: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+#overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 12px; }
+#overlay[hidden] { display: none; }
+.panel {
+  margin-top: 18%;
+  background: var(--panel); border: 3px solid var(--edge); box-shadow: 0 0 0 3px #7a3a08, 6px 6px 0 3px #0008;
+  padding: 16px 20px; width: min(440px, 100%); max-height: 100%; overflow: auto; border-radius: 4px;
+}
+.panel:has(h2) { margin-top: 0; }
+.panel h2 { margin: 0 0 12px; font-size: 20px; color: var(--edge); text-transform: uppercase; letter-spacing: 1px; }
+.panel p { margin: 0 0 12px; }
+.menu { display: flex; flex-direction: column; gap: 8px; }
+.menu.row, .row { flex-direction: row; display: flex; gap: 8px; }
+.menu.row button { flex: 1; }
+button {
+  font: inherit; color: var(--text); background: #2a2458; border: 2px solid #4a4290; border-radius: 3px;
+  padding: 8px 12px; cursor: pointer; text-align: center;
+}
+button:hover:not([disabled]), button:focus-visible { background: #3c3480; border-color: var(--edge); outline: none; }
+button[disabled] { opacity: 0.45; cursor: default; }
+button:focus-visible::before { content: "▶ "; color: var(--edge); }
+.slots { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.slotrow { display: flex; gap: 6px; }
+.slotrow .slot { flex: 1; }
+.slot { display: flex; flex-direction: column; text-align: left; gap: 2px; font-size: 14px; }
+.slot b { color: var(--edge); }
+.slot:focus-visible::before { content: none; }
+button.small { font-size: 13px; padding: 4px 8px; }
+.dim { color: var(--dim); font-size: 13px; }
+.error { color: var(--accent); min-height: 1.2em; font-size: 14px; }
+.code { margin-bottom: 4px; }
+.code label { display: block; margin-bottom: 6px; font-size: 14px; }
+.code input {
+  flex: 1; min-width: 0; font: inherit; font-size: 18px; letter-spacing: 2px; text-transform: uppercase;
+  background: #0a0818; color: var(--text); border: 2px solid #4a4290; border-radius: 3px; padding: 6px 10px;
+}
+.code input:focus { border-color: var(--edge); outline: none; }
+.savecode { display: flex; flex-direction: column; align-items: center; gap: 4px; background: #0a0818; border: 2px dashed var(--edge); padding: 12px; margin-bottom: 12px; text-align: center; }
+.savecode strong { font-size: 28px; letter-spacing: 4px; color: var(--edge); user-select: all; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 12px; font-size: 14px; }
+th { text-align: left; color: var(--edge); padding: 4px 12px 4px 0; vertical-align: top; white-space: nowrap; }
+td { padding: 4px 0; }
+
+#hudbtns { position: absolute; right: 6px; bottom: 6px; display: flex; gap: 6px; opacity: 0.55; }
+#hudbtns:hover { opacity: 1; }
+#hudbtns button { padding: 2px 6px; font-size: 14px; background: #0008; border-color: #fff3; }
+#hudbtns button:focus-visible::before { content: none; }
+
+#touch { display: none; width: 100%; max-width: 640px; justify-content: space-between; padding: 12px 16px; user-select: none; touch-action: none; }
+#touch .pad { display: flex; gap: 10px; align-items: center; }
+#touch button { width: 64px; height: 64px; border-radius: 50%; font-size: 22px; background: #2a2458cc; touch-action: none; }
+#touch button.on { background: var(--edge); color: #000; }
+#touch button[data-btn="jump"] { width: 76px; height: 76px; }
+@media (pointer: coarse) { #touch { display: flex; } }

@@ -1,0 +1,24 @@
+// Headless smoke test: loads the game, checks for errors, plays a bit, screenshots.
+const pw = await import(process.env.PW || 'playwright'); const { chromium } = pw.default || pw;
+const out = process.argv[2] || '.';
+const url = process.env.URL || 'http://localhost:8080/';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 800, height: 700 } });
+const errors = [];
+page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(m.type() + ': ' + m.text()); });
+await page.goto(url);
+await page.waitForTimeout(800);
+await page.screenshot({ path: `${out}/01-title.png` });
+await page.click('text=New Game');
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/02-intro.png` });
+await page.waitForTimeout(2300);
+await page.keyboard.down('ArrowRight');
+await page.waitForTimeout(1500);
+await page.keyboard.press('KeyZ');
+await page.waitForTimeout(800);
+await page.screenshot({ path: `${out}/03-play.png` });
+await page.keyboard.up('ArrowRight');
+console.log(errors.length ? errors.join('\n') : 'no errors');
+await browser.close();

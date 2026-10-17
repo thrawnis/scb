@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0a0818">
+  <title>SCB</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <main>
+    <div id="stage">
+      <canvas id="screen" width="256" height="224" aria-label="Game screen"></canvas>
+      <div id="overlay" hidden><div class="panel" role="dialog"></div></div>
+      <div id="hudbtns">
+        <button id="pausebtn" title="Pause (Esc)" aria-label="Pause">⏸</button>
+        <button id="mute" title="Mute (M)" aria-label="Toggle sound">🔊</button>
+      </div>
+    </div>
+    <div id="touch" aria-hidden="true">
+      <div class="pad">
+        <button data-btn="left">◀</button>
+        <button data-btn="down">▼</button>
+        <button data-btn="right">▶</button>
+      </div>
+      <div class="pad">
+        <button data-btn="run">B</button>
+        <button data-btn="jump">A</button>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
