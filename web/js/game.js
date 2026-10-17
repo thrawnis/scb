@@ -1,7 +1,7 @@
 // Game state machine, world simulation, rendering and save-state (de)serialisation.
 import { TILE, VIEW_W, VIEW_H, T, LEVELS, GEN_VERSION } from './config.js';
 import { generateLevel } from './levelgen.js';
-import { World, Player, Enemy, Item, Fireball, overlap, PHYS } from './entities.js';
+import { World, Player, Enemy, Item, PhaserShot, overlap, PHYS } from './entities.js';
 import { drawText, drawTextCentered } from './font.js';
 
 export const GAME_TITLE = 'SCB';
@@ -56,7 +56,7 @@ export class Game {
     this.player.setSize(size);
     this.enemies = this.level.entities.map((e) => new Enemy(e.type, e.x, e.y));
     this.items = [];
-    this.fireballs = [];
+    this.shots = [];
     this.particles = [];
     this.time = this.level.time;
     this.timerFrames = 0;
@@ -118,7 +118,7 @@ export class Game {
       if (it.emerge <= 0 && overlap(p, it)) { it.remove = true; this.collect(it); }
     }
     for (const e of this.enemies) if (near(e) || e.state === 'dead') e.update(this);
-    for (const f of this.fireballs) f.update(this);
+    for (const f of this.shots) f.update(this);
     this.enemyInteractions();
     this.playerVsEnemies(prevBottom);
 
@@ -127,7 +127,7 @@ export class Game {
     this.updateParticles();
     this.enemies = this.enemies.filter((e) => !e.remove);
     this.items = this.items.filter((i) => !i.remove);
-    this.fireballs = this.fireballs.filter((f) => !f.remove);
+    this.shots = this.shots.filter((f) => !f.remove);
 
     if (p.y > this.world.h * TILE + 8) { this.die(); return; }
     if (p.x + p.w >= this.level.flagX * TILE + 7) this.startFlag();
@@ -163,7 +163,7 @@ export class Game {
         if (r.state === 'walk') r.vx = Math.abs(r.vx);
       }
     }
-    for (const f of this.fireballs) {
+    for (const f of this.shots) {
       for (const e of live) {
         if (!f.remove && e.state !== 'dead' && overlap(f, e)) {
           f.remove = true;
@@ -252,7 +252,7 @@ export class Game {
 
   collect(it) {
     const p = this.player;
-    if (it.kind === 'life') {
+    if (it.kind === 'tea') {
       this.lives++;
       this.sfx('life');
       this.popText('1UP', it.x, it.y);
@@ -260,8 +260,8 @@ export class Game {
     }
     this.sfx('power');
     this.award(1000, it.x, it.y);
-    if (it.kind === 'berry' && p.size === 0) { p.setSize(1); this.freeze = 30; }
-    else if (it.kind === 'bloom') { if (p.size < 2) { p.setSize(2); this.freeze = 30; } }
+    if (it.kind === 'badge' && p.size === 0) { p.setSize(1); this.freeze = 30; }
+    else if (it.kind === 'phaser') { if (p.size < 2) { p.setSize(2); this.freeze = 30; } }
   }
 
   bumpBlock(tx, ty) {
@@ -295,7 +295,7 @@ export class Game {
     w.set(tx, ty, T.USED);
     if (content === 'coin') this.coinPop(tx, ty);
     else {
-      const kind = content === 'life' ? 'life' : p.size === 0 ? 'berry' : 'bloom';
+      const kind = content === 'life' ? 'tea' : p.size === 0 ? 'badge' : 'phaser';
       this.items.push(new Item(kind, tx, ty));
       this.sfx('sprout');
     }
@@ -312,7 +312,7 @@ export class Game {
       }
     }
     for (const it of this.items) {
-      if (it.emerge <= 0 && overlap(box, it)) { it.vy = -4; if (it.kind !== 'bloom') it.vx = it.x + it.w / 2 < tx * TILE + 8 ? -1 : 1; }
+      if (it.emerge <= 0 && overlap(box, it)) { it.vy = -4; if (it.kind !== 'phaser') it.vx = it.x + it.w / 2 < tx * TILE + 8 ? -1 : 1; }
     }
     if (this.world.tile(tx, ty - 1) === T.COIN) { this.world.set(tx, ty - 1, T.EMPTY); this.coinPop(tx, ty - 1); }
   }
@@ -336,8 +336,8 @@ export class Game {
 
   popText(text, x, y) { this.particles.push({ kind: 'text', text, x, y, t: 0 }); }
   puff(x, y) { this.particles.push({ kind: 'puff', x, y, t: 0 }); }
-  countFireballs() { return this.fireballs.length; }
-  spawnFireball(x, y, dir) { this.fireballs.push(new Fireball(x, y, dir)); this.sfx('fire'); }
+  countShots() { return this.shots.length; }
+  spawnShot(x, y, dir) { this.shots.push(new PhaserShot(x, y, dir)); this.sfx('fire'); }
 
   updateParticles() {
     for (const q of this.particles) {
@@ -488,17 +488,17 @@ export class Game {
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     this.renderHUD(ctx);
     if (this.state === 'intro') {
-      drawTextCentered(ctx, 'WORLD ' + this.level.name, VIEW_W / 2, 84, '#ffffff');
-      drawTextCentered(ctx, this.level.title.toUpperCase(), VIEW_W / 2, 100, '#ffd23a');
+      drawTextCentered(ctx, 'MISSION ' + this.level.name, VIEW_W / 2, 84, '#ffffff');
+      drawTextCentered(ctx, this.level.title.toUpperCase(), VIEW_W / 2, 100, '#ff9c3a');
       const hero = this.art.hero.small.stand.r;
       ctx.drawImage(hero, VIEW_W / 2 - 26, 122);
       drawText(ctx, 'x  ' + this.lives, VIEW_W / 2 - 2, 128, '#ffffff');
     } else if (this.state === 'gameover') {
       drawTextCentered(ctx, 'GAME OVER', VIEW_W / 2, 104, '#ff5a6e');
     } else {
-      drawTextCentered(ctx, 'YOU CLEARED EVERY LEVEL!', VIEW_W / 2, 80, '#ffd23a');
+      drawTextCentered(ctx, 'MISSION ACCOMPLISHED!', VIEW_W / 2, 80, '#ff9c3a');
       drawTextCentered(ctx, 'FINAL SCORE ' + String(this.score).padStart(6, '0'), VIEW_W / 2, 100, '#ffffff');
-      drawTextCentered(ctx, 'THANKS FOR PLAYING', VIEW_W / 2, 124, '#80bcff');
+      drawTextCentered(ctx, 'THANKS FOR PLAYING. ENGAGE!', VIEW_W / 2, 124, '#9ab8ff');
       if (Math.floor(this.frame / 30) % 2) drawTextCentered(ctx, 'PRESS ENTER', VIEW_W / 2, 160, '#ffffff');
     }
   }
@@ -514,6 +514,7 @@ export class Game {
       for (let x = off; x < VIEW_W; x += img.width) ctx.drawImage(img, x, y);
     };
     layer(th.mountains, 0.15);
+    layer(th.celestial, 0.05, 0, f * 0.02);
     layer(th.clouds, 0.3, 0, f * 0.08);
     layer(th.hills, 0.5);
 
@@ -554,11 +555,11 @@ export class Game {
     for (const it of this.items) if (it.emerge <= 0) this.drawItem(ctx, it, camX);
     for (const e of this.enemies) this.drawEnemy(ctx, th, e, camX);
     if (this.state !== 'title') this.drawPlayer(ctx, camX);
-    for (const fb of this.fireballs) ctx.drawImage(this.art.fireball[Math.floor(fb.anim / 3) % 4], Math.floor(fb.x - camX), Math.floor(fb.y));
+    for (const fb of this.shots) ctx.drawImage(this.art.beam[Math.floor(fb.anim / 3) % 2], Math.floor(fb.x - camX), Math.floor(fb.y));
     for (const q of this.particles) {
       const x = Math.floor(q.x - camX), y = Math.floor(q.y);
       if (q.kind === 'debris') ctx.drawImage(th.debris, x, y);
-      else if (q.kind === 'coin') ctx.drawImage(this.art.coin[Math.floor(q.t / 3) % 4], x, y);
+      else if (q.kind === 'coin') ctx.drawImage(this.art.latinum[Math.floor(q.t / 3) % 4], x, y);
       else if (q.kind === 'text') drawText(ctx, q.text, x, y, '#ffffff');
       else if (q.kind === 'puff') {
         ctx.fillStyle = q.t < 6 ? '#fff8c0' : '#ff8a30';
@@ -574,24 +575,25 @@ export class Game {
       return above === T.GROUND ? th.tiles[T.GROUND] : th.groundTop;
     }
     if (t === T.QUESTION) return th.question[qf];
-    if (t === T.COIN) return this.art.coin[cf];
+    if (t === T.COIN) return this.art.latinum[cf];
     return th.tiles[t];
   }
 
   drawItem(ctx, it, camX) {
-    const spr = it.kind === 'life' ? this.art.lifeBerry : it.kind === 'bloom' ? this.art.bloom : this.art.berry;
+    const spr = it.kind === 'tea' ? this.art.tea : it.kind === 'phaser' ? this.art.phaser : this.art.badge;
     ctx.drawImage(spr.r, Math.floor(it.x - 1 - camX), Math.floor(it.y));
   }
 
   drawEnemy(ctx, th, e, camX) {
-    const x = Math.floor(e.x - 1 - camX), y = Math.floor(e.y + e.h - 16);
+    let x = Math.floor(e.x - 1 - camX);
+    const y = Math.floor(e.y + e.h - 16);
+    if (e.state === 'shell' && e.timer > 330) x += Math.floor(e.timer / 4) % 2 ? 1 : -1; // shake before waking
     if (x < -16 || x > VIEW_W) return;
     let img;
     if (e.kind === 'walker') {
-      img = e.state === 'flat' ? th.blobFlat.r : th.blob[Math.floor(e.anim / 10) % 2][e.vx > 0 ? 'r' : 'l'];
+      img = e.state === 'flat' ? th.walkerFlat.r : th.walker[Math.floor(e.anim / 10) % 2][e.vx > 0 ? 'r' : 'l'];
     } else {
-      img = e.state === 'walk' ? th.bug[Math.floor(e.anim / 8) % 2][e.vx > 0 ? 'r' : 'l'] : th.shell.r;
-      if (e.state === 'shell' && e.timer > 330 && Math.floor(e.timer / 4) % 2) img = th.shell.l; // wobble before waking
+      img = e.state === 'walk' ? th.probe[Math.floor(e.anim / 8) % 2][e.vx > 0 ? 'r' : 'l'] : th.sphere.r;
     }
     if (e.state === 'dead') {
       ctx.save();
@@ -607,7 +609,7 @@ export class Game {
     if (p.hidden) return;
     if (p.inv > 0 && Math.floor(p.inv / 3) % 2) return;
     if (this.freeze > 0 && Math.floor(this.freeze / 4) % 2) return;
-    const set = (p.size === 2 ? this.art.heroFire : this.art.hero)[p.size > 0 ? 'big' : 'small'];
+    const set = (p.size === 2 ? this.art.heroPhaser : this.art.hero)[p.size > 0 ? 'big' : 'small'];
     let fr = p.dead ? 'jump' : this.state === 'flag' ? 'jump' : p.frame();
     if (p.throwAnim > 0 && fr !== 'crouch') fr = 'walk3';
     const spr = set[fr][p.facing > 0 ? 'r' : 'l'];
@@ -616,17 +618,18 @@ export class Game {
 
   renderHUD(ctx) {
     const w = '#ffffff';
-    if (this.level.theme === 'underground' && this.state !== 'intro') {
-      ctx.fillStyle = 'rgba(6,10,28,0.7)';
+    const band = this.art.themes[this.level.theme].hudBand;
+    if (band && this.state !== 'intro') {
+      ctx.fillStyle = band;
       ctx.fillRect(0, 0, VIEW_W, 26);
     }
     drawText(ctx, 'SCORE', 12, 6, w);
     drawText(ctx, String(this.score ?? 0).padStart(6, '0'), 12, 15, w);
-    ctx.drawImage(this.art.coin[0], 2, 2, 12, 12, 84, 5, 8, 8);
+    ctx.drawImage(this.art.latinum[0], 2, 2, 12, 12, 84, 5, 8, 8);
     drawText(ctx, 'x' + String(this.coins ?? 0).padStart(2, '0'), 94, 6, w);
     ctx.drawImage(this.art.hero.small.stand.r, 84, 14, 8, 8);
     drawText(ctx, 'x' + (this.lives ?? 0), 94, 15, w);
-    drawText(ctx, 'WORLD', 140, 6, w);
+    drawText(ctx, 'MISSION', 134, 6, w);
     drawText(ctx, this.level.name, 146, 15, w);
     drawText(ctx, 'TIME', 206, 6, w);
     if (this.state !== 'intro') drawText(ctx, String(Math.max(0, this.time)).padStart(3, '0'), 209, 15, this.time <= 100 ? '#ff8a8a' : w);
@@ -637,8 +640,8 @@ export class Game {
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     ctx.save();
     ctx.scale(4, 4);
-    drawTextCentered(ctx, GAME_TITLE, VIEW_W / 8, 8, '#ffd23a', '#7a3a08');
+    drawTextCentered(ctx, GAME_TITLE, VIEW_W / 8, 8, '#ff9c3a', '#5a2a00');
     ctx.restore();
-    drawTextCentered(ctx, 'A 16-BIT STYLE PLATFORMER', VIEW_W / 2, 68, '#ffffff');
+    drawTextCentered(ctx, 'A NEXT GENERATION ADVENTURE', VIEW_W / 2, 68, '#ffffff');
   }
 }

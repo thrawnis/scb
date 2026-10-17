@@ -1,9 +1,15 @@
 # SCB
 
-A side-scrolling platformer in the spirit of the NES original, with 16-bit (SNES-style) graphics:
-256×224 resolution, banded and dithered skies, parallax mountains and hills, shaded tiles.
+A side-scrolling platformer in the spirit of the NES original, with 16-bit (SNES-style) graphics
+and a *Star Trek: The Next Generation* theme. It is an unofficial fan tribute.
 
-- **Two levels**: 1-1 *Sunny Meadows* (overworld) and 1-2 *Crystal Caverns* (underground).
+- **Two missions**: 1-1 *Away Mission* (an alien planet with a ringed gas giant and a starship in orbit) and
+  1-2 *Borg Cube* (inside a cube, full of drones and green-lit machinery).
+- **Cast**: you are a Starfleet officer in command red. Ferengi and Borg drones walk the levels. Small Borg
+  probes curl into spheres when stomped, and you can kick the spheres. Collect gold-pressed latinum (coins)
+  and open LCARS panels (? blocks). A **combadge** promotes you to full size. A **type-2 phaser** puts you in
+  security gold and lets you fire phaser bolts. A cup of **Earl Grey, hot** is an extra life. Each mission ends
+  at a transporter beacon (the flagpole), and you then board a shuttlecraft.
 - **Same levels for everyone**: generated procedurally from fixed seeds in `web/js/config.js`.
 - **Free scrolling**: you can walk back left; the camera follows both ways.
 - **Save anywhere** (pause menu). Saves keep the exact state mid-level: position, enemies, broken blocks, items, timer.
@@ -53,7 +59,7 @@ Open the game with `#debug` in the URL to get `window.scb` for poking at the gam
 | Move          | ← → / A D                   | D-pad, stick |
 | Crouch        | ↓ / S                       | Down         |
 | Jump          | Z, Space, K, ↑ / W          | A            |
-| Run / fire    | X, Shift, J                 | X            |
+| Run / phaser  | X, Shift, J                 | X            |
 | Pause / menu  | Esc, Enter, P               | Start        |
 | Mute          | M                           |              |
 

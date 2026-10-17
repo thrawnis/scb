@@ -9,14 +9,14 @@ function freq(n) {
 
 // Original tunes. One token per step; '-' holds the previous note, '.' is a rest.
 const TUNES = {
-  overworld: {
+  planet: {
     step: 0.125,
     lead: 'E5 G5 C6 - B5 A5 G5 - E5 G5 A5 G5 E5 - D5 - C5 E5 G5 - A5 G5 E5 - F5 E5 D5 - C5 - . . ' +
       'G5 - E5 G5 A5 - G5 E5 F5 - D5 F5 G5 - F5 D5 E5 C5 D5 E5 F5 E5 D5 C5 B4 C5 D5 B4 C5 - . .',
     bass: 'C3 . G3 . C3 . G3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . G2 . B2 . ' +
       'C3 . G3 . C3 . E3 . D3 . A3 . D3 . F3 . F2 . C3 . G2 . D3 . G2 . G2 . C3 . . .',
   },
-  underground: {
+  borg: {
     step: 0.15,
     lead: 'A4 . C5 . E5 . D5 C5 . . A4 . G4 . A4 . . . C5 D5 E5 . G5 . F5 E5 D5 . E5 - - . ' +
       'A4 . C5 . E5 . A5 . G5 F5 E5 . D5 . E5 . F5 . E5 . D5 . C5 . B4 . G#4 . A4 - - .',
@@ -119,11 +119,11 @@ export class Audio {
       case 'sprout': this.seq(['C4', 'G4', 'C5', 'G5'], 0.05, 'triangle', 0.3); break;
       case 'power': this.seq(['C5', 'E5', 'G5', 'C6', 'E6', 'G6'], 0.05, 'square', 0.14); break;
       case 'life': this.seq(['E6', 'G6', 'E7', 'C7', 'D7', 'G7'], 0.08, 'square', 0.12); break;
-      case 'fire': this.tone('square', 900, 200, 0.07, 0.12); break;
+      case 'fire': this.tone('sawtooth', 1400, 500, 0.14, 0.08); this.tone('sine', 1800, 900, 0.14, 0.12); break;
       case 'kick': this.tone('square', 700, 300, 0.08, 0.2); break;
       case 'hurt': this.seq(['A4', 'E4', 'A3', 'E3'], 0.06, 'square', 0.18); break;
       case 'die': this.seq(['B4', 'F5', '.', 'F5', 'F5', 'E5', 'D5', 'C5'], 0.12, 'square', 0.18); break;
-      case 'flag': this.tone('square', 1200, 200, 0.9, 0.12); break;
+      case 'flag': this.hiss(1.2, 0.12, 4000); this.seq(['C6', 'E6', 'G6', 'C7', 'E7', 'G7', 'C7', 'E7', 'G7'], 0.1, 'sine', 0.1); break;
       case 'pause': this.seq(['E5', 'C5', 'E5', 'C5'], 0.06, 'square', 0.12); break;
       case 'tick': this.tone('square', 1500, 0, 0.03, 0.06); break;
       case 'hurry': this.seq(['C6', 'C6', 'C6'], 0.09, 'square', 0.12); break;

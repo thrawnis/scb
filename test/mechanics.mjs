@@ -27,13 +27,13 @@ function setup() {
   const tx = idx % g.world.w, ty = Math.floor(idx / g.world.w);
   g.player.x = tx * TILE + 2; g.player.y = (ty + 1) * TILE + 2; g.player.vy = -3;
   run(1);
-  check('bumping power block spawns a berry', g.items.length === 1 && g.items[0].kind === 'berry');
+  check('bumping power block spawns a combadge', g.items.length === 1 && g.items[0].kind === 'badge');
   check('block becomes used', g.world.tile(tx, ty) === T.USED);
   run(40);
   const it = g.items[0];
   g.player.x = it.x; g.player.y = it.y + it.h - g.player.h; g.player.vy = 0;
   run(1);
-  check('collecting berry makes player big', g.player.size === 1 && g.player.h === 28);
+  check('collecting combadge makes player big', g.player.size === 1 && g.player.h === 28);
   run(40);
   // Big player breaks bricks.
   const bi = g.world.tiles.findIndex((t, i) => t === T.BRICK && !g.world.contents[i] && Math.floor(i / g.world.w) > 3);
@@ -41,6 +41,29 @@ function setup() {
   g.player.x = bx * TILE + 2; g.player.y = (by + 1) * TILE + 1; g.player.vy = -3;
   run(1);
   check('big player breaks a brick', g.world.tile(bx, by) === T.EMPTY);
+}
+
+// Phaser form fires straight shots that knock out enemies.
+{
+  const { g, run } = setup();
+  const p = g.player;
+  run(5);
+  p.setSize(2);
+  run(5);
+  const e = new Enemy('walker', p.x + 80, 11 * TILE); e.vx = 0;
+  g.enemies.push(e);
+  g.input.keys.run = true;
+  run(1);
+  g.input.keys.run = false;
+  check('phaser form fires a shot', g.shots.length === 1 && g.shots[0].vy === 0);
+  run(30);
+  check('phaser shot knocks out an enemy', e.state === 'dead' || !g.enemies.includes(e));
+}
+
+// Older saves with fruit item names still load.
+{
+  const { Item } = await import('../web/js/entities.js');
+  check('legacy item names map to new items', Item.restore({ k: 'bloom', x: 0, y: 0 }).kind === 'phaser' && Item.restore({ k: 'life', x: 0, y: 0 }).kind === 'tea');
 }
 
 // Stomp a walker, get hurt by one.

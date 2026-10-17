@@ -11,7 +11,7 @@ import { ROWS, T, LEVELS, GEN_VERSION } from './config.js';
 class Builder {
   constructor(def) {
     this.def = def;
-    this.underground = def.theme === 'underground';
+    this.underground = def.theme === 'borg'; // enclosed level: ceiling, flat floor
     this.w = def.width + 60; // room for the ending section
     this.h = ROWS;
     this.tiles = new Uint8Array(this.w * this.h);
@@ -223,7 +223,7 @@ export function generateLevel(index) {
       if (b.groundTop[cx + i] !== gt || b.get(cx + i, gt - 1) !== T.EMPTY || b.get(cx + i, gt - 2) !== T.EMPTY) ok = false;
     }
     if (ok && rng.chance(0.14)) {
-      b.decor.push({ type: b.underground ? 'crystal' : rng.pick(['bush', 'bush', 'flowers', 'fence']), x: cx, y: gt, w });
+      b.decor.push({ type: b.underground ? 'conduit' : rng.pick(['rocks', 'rocks', 'flora', 'sensor']), x: cx, y: gt, w });
       cx += w + 3;
     }
   }

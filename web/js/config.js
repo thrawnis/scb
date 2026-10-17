@@ -10,8 +10,8 @@ export const GEN_VERSION = 1;
 
 // Fixed seeds: every player gets exactly the same levels.
 export const LEVELS = [
-  { name: '1-1', title: 'Sunny Meadows', theme: 'overworld', seed: 0x5cb00001, width: 210, difficulty: 0.35, time: 400 },
-  { name: '1-2', title: 'Crystal Caverns', theme: 'underground', seed: 0x5cb00002, width: 200, difficulty: 0.7, time: 400 },
+  { name: '1-1', title: 'Away Mission', theme: 'planet', seed: 0x5cb00001, width: 210, difficulty: 0.35, time: 400 },
+  { name: '1-2', title: 'Borg Cube', theme: 'borg', seed: 0x5cb00002, width: 200, difficulty: 0.7, time: 400 },
 ];
 
 export const T = {

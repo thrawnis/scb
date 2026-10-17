@@ -152,8 +152,8 @@ export class Player {
     // Fireballs.
     if (this.fireCooldown > 0) this.fireCooldown--;
     if (this.throwAnim > 0) this.throwAnim--;
-    if (this.size === 2 && input.pressed('run') && !this.crouch && this.fireCooldown === 0 && game.countFireballs() < 2) {
-      game.spawnFireball(this.facing > 0 ? this.x + this.w : this.x - 8, this.y + 4, this.facing);
+    if (this.size === 2 && input.pressed('run') && !this.crouch && this.fireCooldown === 0 && game.countShots() < 2) {
+      game.spawnShot(this.facing > 0 ? this.x + this.w : this.x - 12, this.y + this.h - 12, this.facing);
       this.fireCooldown = 10;
       this.throwAnim = 8;
     }
@@ -272,7 +272,7 @@ export class Enemy {
 
 export class Item {
   constructor(kind, tx, ty) {
-    this.kind = kind; // 'berry' | 'life' | 'bloom'
+    this.kind = kind; // 'badge' (grow) | 'tea' (extra life) | 'phaser'
     this.x = tx * TILE + 1; this.y = ty * TILE; this.w = 14; this.h = 16;
     this.vx = 0; this.vy = 0;
     this.emerge = 16; // pixels still to rise out of the block
@@ -283,10 +283,10 @@ export class Item {
     if (this.emerge > 0) {
       this.y -= 0.5;
       this.emerge -= 0.5;
-      if (this.emerge <= 0 && this.kind !== 'bloom') this.vx = 1;
+      if (this.emerge <= 0 && this.kind !== 'phaser') this.vx = 1;
       return;
     }
-    if (this.kind === 'bloom') return;
+    if (this.kind === 'phaser') return;
     this.vy = Math.min(5, this.vy + 0.35);
     if (moveX(game.world, this)) this.vx = -this.vx;
     if (moveY(game.world, this).down) this.vy = 0;
@@ -296,24 +296,26 @@ export class Item {
   serialize() { return { k: this.kind, x: this.x, y: this.y, vx: this.vx, vy: this.vy, e: this.emerge }; }
 
   static restore(s) {
-    const it = new Item(['berry', 'life', 'bloom'].includes(s.k) ? s.k : 'berry', 0, 0);
+    // Older saves used fruit names for the same three items.
+    const legacy = { berry: 'badge', life: 'tea', bloom: 'phaser' };
+    const k = legacy[s.k] || s.k;
+    const it = new Item(['badge', 'tea', 'phaser'].includes(k) ? k : 'badge', 0, 0);
     Object.assign(it, { x: +s.x, y: +s.y, vx: +s.vx || 0, vy: +s.vy || 0, emerge: +s.e || 0 });
     return it;
   }
 }
 
-export class Fireball {
+// Phaser bolt: flies straight until it hits a wall or leaves the screen.
+export class PhaserShot {
   constructor(x, y, dir) {
-    this.x = x; this.y = y; this.w = 8; this.h = 8;
-    this.vx = dir * 4; this.vy = 1.5;
+    this.x = x; this.y = y; this.w = 12; this.h = 4;
+    this.vx = dir * 5; this.vy = 0;
     this.remove = false;
     this.anim = 0;
   }
   update(game) {
     this.anim++;
-    this.vy = Math.min(4, this.vy + 0.35);
-    if (moveX(game.world, this)) { this.remove = true; game.puff(this.x, this.y); return; }
-    if (moveY(game.world, this).down) this.vy = -3.2;
+    if (moveX(game.world, this)) { this.remove = true; game.puff(this.x + (this.vx > 0 ? 8 : -2), this.y - 2); return; }
     const cam = game.camX;
     if (this.x < cam - 16 || this.x > cam + 272 || this.y > game.world.h * TILE) this.remove = true;
   }

@@ -19,7 +19,7 @@ function slotLabel(rec, i) {
   const when = new Date(rec.savedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   return [
     h('b', {}, `Slot ${i + 1}`),
-    h('span', {}, `World ${s.world ?? '?'} · Score ${String(s.score ?? 0).padStart(6, '0')} · Lives ${s.lives ?? '?'}`),
+    h('span', {}, `Mission ${s.world ?? '?'} · Score ${String(s.score ?? 0).padStart(6, '0')} · Lives ${s.lives ?? '?'}`),
     h('span', { class: 'dim' }, when + (rec.code ? ` · Code ${formatCode(rec.code)}` : ' · Not synced')),
   ];
 }
@@ -205,7 +205,7 @@ export class UI {
     const s = remote.data?.summary || {};
     return [
       h('h2', {}, 'Save found'),
-      h('p', {}, `World ${s.world ?? '?'} · Score ${String(s.score ?? 0).padStart(6, '0')} · Lives ${s.lives ?? '?'}`),
+      h('p', {}, `Mission ${s.world ?? '?'} · Score ${String(s.score ?? 0).padStart(6, '0')} · Lives ${s.lives ?? '?'}`),
       h('p', { class: 'dim' }, 'Pick a slot to keep it in. Saving to that slot will update this code.'),
       h('div', { class: 'slots' }, slots.map((rec, i) => h('button', {
         class: 'slot',
@@ -232,7 +232,7 @@ export class UI {
   controls() {
     const rows = [
       ['Move', '← → or A D'], ['Crouch', '↓ or S'], ['Jump', 'Z, Space, K or ↑ / W (hold for higher)'],
-      ['Run / Fire', 'X, Shift or J'], ['Pause / Save / Load', 'Esc, Enter or P'], ['Mute', 'M'],
+      ['Run / Fire phaser', 'X, Shift or J'], ['Pause / Save / Load', 'Esc, Enter or P'], ['Mute', 'M'],
       ['Gamepad', 'D-pad/stick, A jump, X run, Start pause'],
     ];
     return [
