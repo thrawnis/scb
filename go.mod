@@ -1,3 +1,3 @@
-module github.com/thrawnis/scb
+module scb
 
 go 1.22
